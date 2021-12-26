@@ -118,37 +118,37 @@
   "appointments": [
     {
       "id": 1,
-      "startDate": 1579674600,
+      "startDate": 1641378600,
       "barberId": 1,
       "serviceId": 2
     },
     {
       "id": 2,
-      "startDate": 1579680900,
+      "startDate": 1641382200,
       "barberId": 1,
       "serviceId": 1
     },
     {
       "id": 3,
-      "startDate": 1579685400,
+      "startDate": 1641468600,
       "barberId": 1,
       "serviceId": 2
     },
     {
       "id": 4,
-      "startDate": 1579689000,
+      "startDate": 1641474000,
       "barberId": 1,
       "serviceId": 1
     },
     {
       "id": 5,
-      "startDate": 1579691400,
+      "startDate": 1641476400,
       "barberId": 1,
       "serviceId": 2
     },
     {
       "id": 6,
-      "startDate": 1579698600,
+      "startDate": 1641480000,
       "barberId": 1,
       "serviceId": 1
     }

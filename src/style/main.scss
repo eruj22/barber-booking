@@ -54,3 +54,13 @@ h6 {
 
 // font-family: 'Roboto Slab', serif;
 // font-family: 'Squada One', cursive;
+
+.contact {
+  &__image {
+    max-width: 400px;
+  }
+}
+
+.appointment {
+  max-width: 500px;
+}

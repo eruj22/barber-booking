@@ -56,6 +56,63 @@
           }
         }
       ]
+    },
+    {
+      "id": 2,
+      "firstName": "Jonas",
+      "lastName": "Bradac",
+      "workHours": [
+        {
+          "id": 1,
+          "day": 1,
+          "startHour": 7,
+          "endHour": "15",
+          "lunchTime": {
+            "startHour": 11,
+            "durationMinutes": 30
+          }
+        },
+        {
+          "id": 2,
+          "day": 2,
+          "startHour": 7,
+          "endHour": "15",
+          "lunchTime": {
+            "startHour": 11,
+            "durationMinutes": 30
+          }
+        },
+        {
+          "id": 3,
+          "day": 3,
+          "startHour": 7,
+          "endHour": "15",
+          "lunchTime": {
+            "startHour": 11,
+            "durationMinutes": 30
+          }
+        },
+        {
+          "id": 9,
+          "day": 4,
+          "startHour": 12,
+          "endHour": "20",
+          "lunchTime": {
+            "startHour": 16,
+            "durationMinutes": 30
+          }
+        },
+        {
+          "id": 10,
+          "day": 5,
+          "startHour": 12,
+          "endHour": "20",
+          "lunchTime": {
+            "startHour": 16,
+            "durationMinutes": 30
+          }
+        }
+      ]
     }
   ],
   "appointments": [

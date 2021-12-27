@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getDateFromUnix, isWeekday, getTimeFromMs } from "../utils/helpers";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -39,8 +40,9 @@ const AppointmentForm: React.FC = () => {
   const [allServices, setAllServices] = useState<any[]>([]);
   const [allAppointments, setAllAppointments] = useState<any>([]);
   const [selectDate, setSelectDate] = useState<any>(new Date());
+  const navigate = useNavigate();
 
-  let selectService = watch("service");
+  let selectService = watch("serviceId");
   let selectBarber = watch("barberId");
 
   const barberAppointments = allAppointments
@@ -92,10 +94,11 @@ const AppointmentForm: React.FC = () => {
 
   const currentPriceForServices =
     selectService &&
-    allServices.filter((service) => service?.name === selectService)[0].price;
+    allServices.filter((service) => service.id === Number(selectService))[0]
+      .price;
 
   const getServiceDuration = allServices.filter(
-    (service) => service.name === selectService
+    (service) => service.id === Number(selectService)
   )[0]?.durationMinutes;
 
   // get time from available times where there is gap bigger than 10 minutes
@@ -106,8 +109,20 @@ const AppointmentForm: React.FC = () => {
     }
   }
 
-  const onSubmit = (data: {}) => {
-    console.log(data);
+  const onSubmit = (data: any = {}) => {
+    const sendData = {
+      startDate: Number(data.time / 1000),
+      barberId: Number(data.barberId),
+      serviceId: Number(data.serviceId),
+    };
+
+    axios
+      .post("http://localhost:3000/appointments", sendData)
+      .catch((error) => console.log(error));
+
+    setTimeout(() => {
+      navigate("/success");
+    }, 500);
   };
 
   useEffect(() => {
@@ -167,7 +182,7 @@ const AppointmentForm: React.FC = () => {
 
         <div className="appointment__row">
           <div className="appointment__column">
-            <select placeholder="Select Barber" {...register("barberId")}>
+            <select {...register("barberId")}>
               <option value="" hidden>
                 Select Barber
               </option>
@@ -185,21 +200,21 @@ const AppointmentForm: React.FC = () => {
           </div>
 
           <div className="appointment__column">
-            <select placeholder="Select Service" {...register("service")}>
+            <select {...register("serviceId")}>
               <option value="" hidden>
                 Select Service
               </option>
               {allServices.map((service) => {
                 const { name, id } = service;
                 return (
-                  <option value={name} key={id}>
+                  <option value={id} key={id}>
                     {name}
                   </option>
                 );
               })}
             </select>
 
-            <p className="appointment__error">{errors.service?.message}</p>
+            <p className="appointment__error">{errors.serviceId?.message}</p>
           </div>
         </div>
 
@@ -221,15 +236,15 @@ const AppointmentForm: React.FC = () => {
           </div>
 
           <div className="appointment__column">
-            <select placeholder="Select Time" {...register("time")}>
+            <select {...register("time")}>
               <option value="" hidden>
-                Select Service
+                Select Time
               </option>
               {availableTimes.map((time: any, index: number) => {
                 const convertTime = getTimeFromMs(time);
 
                 return (
-                  <option value={convertTime} key={index}>
+                  <option value={time} key={index}>
                     {convertTime}
                   </option>
                 );

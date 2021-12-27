@@ -1,11 +1,11 @@
 import React from "react";
 
-function success() {
+function Success() {
   return (
-    <div>
-      <h1>success</h1>
-    </div>
+    <section className="success">
+      <h1 className="success__title">success</h1>
+    </section>
   );
 }
 
-export default success;
+export default Success;

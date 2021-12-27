@@ -22,7 +22,7 @@ const schema = yup.object().shape({
     .max(9)
     .required("Please enter phone number"),
   barberId: yup.string().required("Please select a barber"),
-  service: yup.string().required("Please select a service"),
+  serviceId: yup.string().required("Please select a service"),
   date: yup.string(),
   time: yup.string().required("Please pick a time"),
 });
@@ -68,8 +68,10 @@ const AppointmentForm: React.FC = () => {
 
   const TenMinutesInMs = 600000;
 
-  // when barber has available time
-  const availableTimes: number[] = [];
+  let unavailableTimes: number[] = [];
+  let availableTimes: number[] = [];
+
+  // get array of available times in whole day
   let startOfTheDay = startDay;
   while (startOfTheDay < endDay) {
     availableTimes.push(startOfTheDay);
@@ -79,7 +81,7 @@ const AppointmentForm: React.FC = () => {
   // remove lunch time
   availableTimes.splice(availableTimes.indexOf(lunchTime), 3);
 
-  // delete time from time array for appointments
+  // remove time from time array for work hours
   barberAppointments.map((appointment: any) => {
     const startTime = appointment?.startDate * 1000;
     const duration =
@@ -97,17 +99,43 @@ const AppointmentForm: React.FC = () => {
     allServices.filter((service) => service.id === Number(selectService))[0]
       .price;
 
-  const getServiceDuration = allServices.filter(
-    (service) => service.id === Number(selectService)
-  )[0]?.durationMinutes;
+  // service duration divided by 10
+  const getServiceDuration =
+    allServices.filter((service) => service.id === Number(selectService))[0]
+      ?.durationMinutes / 10;
 
   // get time from available times where there is gap bigger than 10 minutes
-  let arr = [];
+  let timeAvailableBeforeAppointment = [];
   for (let i = 1; i < availableTimes.length; i++) {
     if (availableTimes[i - 1] + TenMinutesInMs < availableTimes[i]) {
-      arr.push(availableTimes[i - 1]);
+      timeAvailableBeforeAppointment.push(availableTimes[i - 1]);
     }
   }
+
+  // push time from the end of work day
+  timeAvailableBeforeAppointment.push(
+    availableTimes[availableTimes.length - 1]
+  );
+
+  // populate array of all unavailable times
+  for (let item of timeAvailableBeforeAppointment) {
+    let index = availableTimes.indexOf(item);
+
+    for (let i = 0; i < getServiceDuration - 1; i++) {
+      const time = availableTimes[index - i];
+
+      if (time + TenMinutesInMs === availableTimes[index - i + 1] || i === 0) {
+        unavailableTimes.push(time);
+      }
+    }
+  }
+
+  // remove all times that barber isn't available
+  availableTimes = availableTimes.filter(
+    (item) =>
+      unavailableTimes.findIndex((secondItem: any) => secondItem === item) ===
+      -1
+  );
 
   const onSubmit = (data: any = {}) => {
     const sendData = {
@@ -115,6 +143,8 @@ const AppointmentForm: React.FC = () => {
       barberId: Number(data.barberId),
       serviceId: Number(data.serviceId),
     };
+
+    console.log(data);
 
     axios
       .post("http://localhost:3000/appointments", sendData)

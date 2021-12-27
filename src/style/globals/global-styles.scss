@@ -1,0 +1,28 @@
+.redBorder {
+  border: 2px solid $clr-error;
+}
+
+.showOnMobile {
+  display: inline-block;
+}
+
+.showOnDesktop {
+  display: none;
+}
+
+.container {
+  margin: 0 auto;
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+}
+
+@media (min-width: 768px) {
+  .showOnMobile {
+    display: none;
+  }
+
+  .showOnDesktop {
+    display: inline-block;
+  }
+}

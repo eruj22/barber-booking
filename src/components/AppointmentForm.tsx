@@ -128,88 +128,135 @@ const AppointmentForm: React.FC = () => {
       <h2 className="appointment__title">book your appointment</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="appointment__form">
-        <input
-          type="text"
-          placeholder="First Name"
-          {...register("firstName")}
-        />
-        <p>{errors.firstName?.message}</p>
+        <div className="appointment__row">
+          <div className="appointment__column">
+            <input
+              type="text"
+              placeholder="First Name"
+              {...register("firstName")}
+            />
+            <p className="appointment__error">
+              {errors.firstName?.message || errors.lastName?.message}
+            </p>
+          </div>
 
-        <input type="text" placeholder="Last Name" {...register("lastName")} />
-        <p>{errors.lastName?.message}</p>
+          <div className="appointment__column">
+            <input
+              type="text"
+              placeholder="Last Name"
+              {...register("lastName")}
+            />
+          </div>
+        </div>
 
-        <input type="email" placeholder="Email" {...register("email")} />
-        <p>{errors.email?.message}</p>
+        <div className="appointment__row">
+          <div className="appointment__column">
+            <input type="email" placeholder="Email" {...register("email")} />
+            <p className="appointment__error">{errors.email?.message}</p>
+          </div>
 
-        <input
-          type="tel"
-          placeholder="Contact Number"
-          {...register("phoneNumber")}
-        />
-        <p>{errors.phoneNumber?.message}</p>
+          <div className="appointment__column">
+            <input
+              type="tel"
+              placeholder="Contact Number"
+              {...register("phoneNumber")}
+            />
+            <p className="appointment__error">{errors.phoneNumber?.message}</p>
+          </div>
+        </div>
 
-        <select placeholder="Select Barber" {...register("barberId")}>
-          <option value="" hidden>
-            Select Barber
-          </option>
-          {allBarbers.map((barber) => {
-            const { firstName, lastName, id } = barber;
-            return (
-              <option value={id} key={id}>{`${firstName} ${lastName}`}</option>
-            );
-          })}
-        </select>
-        <p>{errors.barber?.message}</p>
-
-        <select placeholder="Select Service" {...register("service")}>
-          <option value="" hidden>
-            Select Service
-          </option>
-          {allServices.map((service) => {
-            const { name, id } = service;
-            return (
-              <option value={name} key={id}>
-                {name}
+        <div className="appointment__row">
+          <div className="appointment__column">
+            <select placeholder="Select Barber" {...register("barberId")}>
+              <option value="" hidden>
+                Select Barber
               </option>
-            );
-          })}
-        </select>
-        <p>{errors.service?.message}</p>
+              {allBarbers.map((barber) => {
+                const { firstName, lastName, id } = barber;
+                return (
+                  <option
+                    value={id}
+                    key={id}
+                  >{`${firstName} ${lastName}`}</option>
+                );
+              })}
+            </select>
+            <p className="appointment__error">{errors.barberId?.message}</p>
+          </div>
 
-        <ReactDatePicker
-          onChange={(date) => {
-            setSelectDate(date);
-          }}
-          selected={selectDate}
-          filterDate={isWeekday}
-          minDate={new Date()}
-        />
-        <p>{selectDate ? "" : "Please pick a date"}</p>
-
-        <select placeholder="Select Time" {...register("time")}>
-          <option value="" hidden>
-            Select Service
-          </option>
-          {availableTimes.map((time: any, index: number) => {
-            const convertTime = getTimeFromMs(time);
-
-            return (
-              <option value={convertTime} key={index}>
-                {convertTime}
+          <div className="appointment__column">
+            <select placeholder="Select Service" {...register("service")}>
+              <option value="" hidden>
+                Select Service
               </option>
-            );
-          })}
-        </select>
-        <p>{errors.time?.message}</p>
+              {allServices.map((service) => {
+                const { name, id } = service;
+                return (
+                  <option value={name} key={id}>
+                    {name}
+                  </option>
+                );
+              })}
+            </select>
 
-        <input
-          type="text"
-          disabled
-          placeholder="Service Price"
-          value={selectService ? `${currentPriceForServices} €` : ""}
-        />
+            <p className="appointment__error">{errors.service?.message}</p>
+          </div>
+        </div>
 
-        <button type="submit">submit</button>
+        <div className="appointment__row">
+          <div className="appointment__column">
+            <div>
+              <ReactDatePicker
+                onChange={(date) => {
+                  setSelectDate(date);
+                }}
+                selected={selectDate}
+                filterDate={isWeekday}
+                minDate={new Date()}
+              />
+            </div>
+            <p className="appointment__error">
+              {selectDate ? "" : "Please pick a date"}
+            </p>
+          </div>
+
+          <div className="appointment__column">
+            <select placeholder="Select Time" {...register("time")}>
+              <option value="" hidden>
+                Select Service
+              </option>
+              {availableTimes.map((time: any, index: number) => {
+                const convertTime = getTimeFromMs(time);
+
+                return (
+                  <option value={convertTime} key={index}>
+                    {convertTime}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="appointment__error">{errors.time?.message}</p>
+          </div>
+        </div>
+
+        <div className="appointment__row">
+          <input
+            className="appointment__price"
+            type="text"
+            disabled
+            placeholder="Service Price"
+            value={selectService ? `${currentPriceForServices} €` : ""}
+          />
+        </div>
+
+        <div className="appointment__row">
+          <button type="submit" className="appointment__button showOnDesktop">
+            book appointment
+          </button>
+          <button type="submit" className="appointment__button showOnMobile">
+            book
+          </button>
+        </div>
       </form>
     </div>
   );

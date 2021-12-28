@@ -51,13 +51,14 @@ h6 {
   line-height: 1.1;
 }
 
-button {
-  border: none;
-  cursor: pointer;
-  background-color: transparent;
-}
-
 #root,
 #__next {
   isolation: isolate;
+}
+
+button,
+select {
+  border: none;
+  cursor: pointer;
+  background-color: rgb(255, 255, 255);
 }

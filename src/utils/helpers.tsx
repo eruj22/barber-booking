@@ -9,7 +9,10 @@ export const getDateFromUnix = (date: number) => {
   return moment.unix(date).format("DD.MM.YYYY");
 };
 
-export const isWeekday = (date: Date) => {
+export const isWeekdayOrToday = (date: Date) => {
   const day = date.getDay();
-  return day !== 0 && day !== 6;
+  const showToday = date.getDate();
+  const today = new Date().getDate();
+
+  return day !== 0 && day !== 6 && showToday !== today;
 };

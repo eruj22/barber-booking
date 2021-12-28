@@ -1,33 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { getDateFromUnix, isWeekday, getTimeFromMs } from "../utils/helpers";
+import {
+  getAllUnavailableTimes,
+  getAllAvailableTimes,
+  getBarberWorkHours,
+} from "../utils/appointment-functions";
+import {
+  getDateFromUnix,
+  isWeekdayOrToday,
+  getTimeFromMs,
+} from "../utils/helpers";
+import { Barbers, Services, Appointments } from "../utils/types";
+import { schema } from "../utils/appointment-schema";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import moment from "moment";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const schema = yup.object().shape({
-  firstName: yup.string().required("Please enter your full name"),
-  lastName: yup.string().required("Please enter your full name"),
-  email: yup.string().email().required("Please enter a valid email"),
-  phoneNumber: yup
-    .string()
-    .matches(
-      /0[3-7][0,1,8][.\- ]?[0-9]{3}[.\- ]?[0-9]{3}/,
-      "Please enter valid slovenian phone number"
-    )
-    .max(9)
-    .required("Please enter phone number"),
-  barberId: yup.string().required("Please select a barber"),
-  serviceId: yup.string().required("Please select a service"),
-  date: yup.string(),
-  time: yup.string().required("Please pick a time"),
-});
-
-const AppointmentForm: React.FC = () => {
+function AppointmentForm() {
   const {
     register,
     handleSubmit,
@@ -36,9 +28,9 @@ const AppointmentForm: React.FC = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const [allBarbers, setAllBarbers] = useState<any[]>([]);
-  const [allServices, setAllServices] = useState<any[]>([]);
-  const [allAppointments, setAllAppointments] = useState<any>([]);
+  const [allBarbers, setAllBarbers] = useState<Barbers[]>([]);
+  const [allServices, setAllServices] = useState<Services[]>([]);
+  const [allAppointments, setAllAppointments] = useState<Appointments[]>([]);
   const [selectDate, setSelectDate] = useState<any>(new Date());
   const navigate = useNavigate();
 
@@ -53,89 +45,30 @@ const AppointmentForm: React.FC = () => {
     )
     ?.filter((date: any) => date.barberId === Number(selectBarber));
 
-  let barberWorkHours = allBarbers
-    .filter((barber) => barber.id === Number(selectBarber))[0]
-    ?.workHours.filter(
-      (hours: any) => hours.day === moment(selectDate).day()
-    )[0];
+  const workTimes = getBarberWorkHours(allBarbers, selectBarber, selectDate);
 
-  const start = barberWorkHours?.startHour;
-  const end = barberWorkHours?.endHour;
-  const lunch = barberWorkHours?.lunchTime.startHour;
-  const startDay = selectDate?.setHours(start ? start : 0, 0, 0);
-  const endDay = selectDate?.setHours(end ? end : 0, 0, 0);
-  const lunchTime = selectDate?.setHours(lunch ? lunch : 0, 0, 0);
+  let availableTimes = getAllAvailableTimes(
+    workTimes,
+    barberAppointments,
+    allServices
+  );
 
-  const TenMinutesInMs = 600000;
+  const unavailableTimes = getAllUnavailableTimes(
+    availableTimes,
+    allServices,
+    selectService
+  );
 
-  let unavailableTimes: number[] = [];
-  let availableTimes: number[] = [];
-
-  // get array of available times in whole day
-  let startOfTheDay = startDay;
-  while (startOfTheDay < endDay) {
-    availableTimes.push(startOfTheDay);
-    startOfTheDay += TenMinutesInMs;
-  }
-
-  // remove lunch time
-  availableTimes.splice(availableTimes.indexOf(lunchTime), 3);
-
-  // remove time from time array for work hours
-  barberAppointments.map((appointment: any) => {
-    const startTime = appointment?.startDate * 1000;
-    const duration =
-      allServices.filter((service) => service.id === appointment.serviceId)[0]
-        .durationMinutes / 10;
-
-    return availableTimes.splice(
-      availableTimes.indexOf(Number(startTime)),
-      duration
-    );
-  });
+  // remove all times that barber isn't available
+  availableTimes = availableTimes.filter(
+    (item) =>
+      unavailableTimes.findIndex((secondItem) => secondItem === item) === -1
+  );
 
   const currentPriceForServices =
     selectService &&
     allServices.filter((service) => service.id === Number(selectService))[0]
       .price;
-
-  // service duration divided by 10
-  const getServiceDuration =
-    allServices.filter((service) => service.id === Number(selectService))[0]
-      ?.durationMinutes / 10;
-
-  // get time from available times where there is gap bigger than 10 minutes
-  let timeAvailableBeforeAppointment = [];
-  for (let i = 1; i < availableTimes.length; i++) {
-    if (availableTimes[i - 1] + TenMinutesInMs < availableTimes[i]) {
-      timeAvailableBeforeAppointment.push(availableTimes[i - 1]);
-    }
-  }
-
-  // push time from the end of work day
-  timeAvailableBeforeAppointment.push(
-    availableTimes[availableTimes.length - 1]
-  );
-
-  // populate array of all unavailable times
-  for (let item of timeAvailableBeforeAppointment) {
-    let index = availableTimes.indexOf(item);
-
-    for (let i = 0; i < getServiceDuration - 1; i++) {
-      const time = availableTimes[index - i];
-
-      if (time + TenMinutesInMs === availableTimes[index - i + 1] || i === 0) {
-        unavailableTimes.push(time);
-      }
-    }
-  }
-
-  // remove all times that barber isn't available
-  availableTimes = availableTimes.filter(
-    (item) =>
-      unavailableTimes.findIndex((secondItem: any) => secondItem === item) ===
-      -1
-  );
 
   const onSubmit = (data: any = {}) => {
     const sendData = {
@@ -143,8 +76,6 @@ const AppointmentForm: React.FC = () => {
       barberId: Number(data.barberId),
       serviceId: Number(data.serviceId),
     };
-
-    console.log(data);
 
     axios
       .post("http://localhost:3000/appointments", sendData)
@@ -256,7 +187,7 @@ const AppointmentForm: React.FC = () => {
                   setSelectDate(date);
                 }}
                 selected={selectDate}
-                filterDate={isWeekday}
+                filterDate={isWeekdayOrToday}
                 minDate={new Date()}
               />
             </div>
@@ -290,7 +221,7 @@ const AppointmentForm: React.FC = () => {
             type="text"
             disabled
             placeholder="Service Price"
-            value={selectService ? `${currentPriceForServices} €` : ""}
+            value={selectService ? `Price is ${currentPriceForServices} €` : ""}
           />
         </div>
 
@@ -305,6 +236,6 @@ const AppointmentForm: React.FC = () => {
       </form>
     </div>
   );
-};
+}
 
 export default AppointmentForm;
